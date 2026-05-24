@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Admin — OhDang.</title>
+  <link href="https://fonts.googleapis.com/css2?family=Boogaloo&family=Nunito:wght@400;600;700;800;900&family=Playfair+Display:ital,wght@1,700&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="css/admin.css"/>
+</head>
+<body>
+<nav class="anav">
+  <div class="anav-in">
+    <span class="anav-brand"><em>Oh</em>dang.</span>
+    <span class="anav-lbl">Admin Dashboard</span>
+    <div class="anav-acts">
+      <a href="index.html" target="_blank" class="abtn-sm">View Site</a>
+      <button onclick="logout()" class="abtn-sm danger">Logout</button>
+    </div>
+  </div>
+</nav>
+<div class="alayout">
+  <aside class="aside">
+    <nav class="aside-nav">
+      <button class="sitem active" onclick="go('dashboard',this)">📊 Dashboard</button>
+      <button class="sitem" onclick="go('revenue',this)">💰 Revenue</button>
+      <button class="sitem" onclick="go('costing',this)">🍜 Food Costing</button>
+      <button class="sitem" onclick="go('expenses',this)">📋 Expenses</button>
+      <button class="sitem" onclick="go('staff',this)">👥 Staff</button>
+      <button class="sitem" onclick="go('investors',this)">🤝 Investors</button>
+      <button class="sitem" onclick="go('pnl',this)">📈 P&amp;L Summary</button>
+    </nav>
+  </aside>
+  <main class="amain">
+    <div id="tab-dashboard" class="tab on">
+      <h1 class="apage-title">Dashboard</h1>
+      <p class="apage-sub">Overview for <span id="curMonth"></span></p>
+      <div class="kgrid" id="kpiGrid"></div>
+      <div class="acard">
+        <h3>How to update website content</h3>
+        <p style="color:#666;line-height:1.75;font-size:0.93rem;">Edit the HTML directly in <strong>index.html</strong> on GitHub. To update prices, find the <code>menu-card-price</code> span. To update hours, find the <code>hours-row</code> divs. After editing, commit the change — Vercel auto-deploys in ~30 seconds.</p>
+      </div>
+    </div>
+    <div id="tab-revenue" class="tab">
+      <h1 class="apage-title">Revenue Tracker</h1>
+      <p class="apage-sub">Record daily sales by dish</p>
+      <div class="acard">
+        <h3>Add Daily Entry</h3>
+        <div class="fgrid">
+          <div class="fg"><label>Date</label><input type="date" id="rDate" class="ainput"/></div>
+          <div class="fg"><label>Hokkien Mee (bowls)</label><input type="number" id="rH" class="ainput" placeholder="0" min="0" oninput="calcRev()"/></div>
+          <div class="fg"><label>Carrot Cake B/W (portions)</label><input type="number" id="rBW" class="ainput" placeholder="0" min="0" oninput="calcRev()"/></div>
+          <div class="fg"><label>Carrot Cake Mixed (portions)</label><input type="number" id="rMix" class="ainput" placeholder="0" min="0" oninput="calcRev()"/></div>
+          <div class="fg"><label>Other / Tips ($)</label><input type="number" id="rOth" class="ainput" placeholder="0.00" step="0.01" oninput="calcRev()"/></div>
+        </div>
+        <div class="rev-calc" id="revCalc">Daily Total: $0.00</div>
+        <button class="abtn" onclick="addRev()">Save Entry</button>
+      </div>
+      <div class="acard">
+        <div class="card-row"><h3>Revenue Log</h3><button class="abtn-sm danger" onclick="clearRev()">Clear All</button></div>
+        <div class="twrap"><table class="atable"><thead><tr><th>Date</th><th>Hokkien Mee</th><th>Carrot Cake B/W</th><th>Carrot Cake Mix</th><th>Other</th><th>Total</th><th></th></tr></thead><tbody id="revBody"></tbody></table></div>
+      </div>
+    </div>
+    <div id="tab-costing" class="tab">
+      <h1 class="apage-title">Food Costing</h1>
+      <p class="apage-sub">Track ingredient cost and margin per dish</p>
+      <div class="acard">
+        <h3>Add Dish</h3>
+        <div class="fgrid">
+          <div class="fg"><label>Dish Name</label><input type="text" id="cDish" class="ainput" placeholder="e.g. Hokkien Mee"/></div>
+          <div class="fg"><label>Selling Price ($)</label><input type="number" id="cSell" class="ainput" placeholder="7.50" step="0.01"/></div>
+          <div class="fg"><label>Ingredient Cost/serving ($)</label><input type="number" id="cIngr" class="ainput" placeholder="0.00" step="0.01"/></div>
+          <div class="fg"><label>Packaging Cost/serving ($)</label><input type="number" id="cPack" class="ainput" placeholder="0.00" step="0.01"/></div>
+        </div>
+        <button class="abtn" onclick="addCost()">Save Dish</button>
+      </div>
+      <div class="acard">
+        <h3>Dish Cost Analysis</h3>
+        <div class="twrap"><table class="atable"><thead><tr><th>Dish</th><th>Sell Price</th><th>Ingredients</th><th>Packaging</th><th>Total Cost</th><th>Gross Profit</th><th>Margin %</th><th></th></tr></thead><tbody id="costBody"></tbody></table></div>
+      </div>
+    </div>
+    <div id="tab-expenses" class="tab">
+      <h1 class="apage-title">Expenses</h1>
+      <p class="apage-sub">Track monthly costs</p>
+      <div class="acard">
+        <h3>Add Expense</h3>
+        <div class="fgrid">
+          <div class="fg"><label>Month</label><input type="month" id="eMonth" class="ainput"/></div>
+          <div class="fg"><label>Category</label>
+            <select id="eCat" class="ainput">
+              <option>Rental / Stall Fee</option><option>Utilities</option><option>Ingredients / Supplies</option>
+              <option>Packaging</option><option>Marketing</option><option>Equipment</option>
+              <option>Event Participation Fee</option><option>Miscellaneous</option>
+            </select>
+          </div>
+          <div class="fg"><label>Description</label><input type="text" id="eDesc" class="ainput" placeholder="e.g. Marsiling monthly rental"/></div>
+          <div class="fg"><label>Amount ($)</label><input type="number" id="eAmt" class="ainput" placeholder="0.00" step="0.01"/></div>
+        </div>
+        <button class="abtn" onclick="addExp()">Save Expense</button>
+      </div>
+      <div class="acard">
+        <div class="card-row"><h3>Expense Log</h3><button class="abtn-sm danger" onclick="clearExp()">Clear All</button></div>
+        <div class="twrap"><table class="atable"><thead><tr><th>Month</th><th>Category</th><th>Description</th><th>Amount</th><th></th></tr></thead><tbody id="expBody"></tbody></table></div>
+      </div>
+    </div>
+    <div id="tab-staff" class="tab">
+      <h1 class="apage-title">Staff Costs</h1>
+      <p class="apage-sub">Track salaries and CPF</p>
+      <div class="acard">
+        <h3>Add Staff</h3>
+        <div class="fgrid">
+          <div class="fg"><label>Name</label><input type="text" id="sName" class="ainput" placeholder="Staff name"/></div>
+          <div class="fg"><label>Role</label><input type="text" id="sRole" class="ainput" placeholder="e.g. Wok Chef"/></div>
+          <div class="fg"><label>Monthly Salary ($)</label><input type="number" id="sSal" class="ainput" placeholder="0.00" step="0.01"/></div>
+          <div class="fg"><label>CPF Contribution ($)</label><input type="number" id="sCPF" class="ainput" placeholder="0.00" step="0.01"/></div>
+        </div>
+        <button class="abtn" onclick="addStaff()">Save Staff</button>
+      </div>
+      <div class="acard">
+        <div class="card-row"><h3>Staff List</h3><button class="abtn-sm danger" onclick="clearStaff()">Clear All</button></div>
+        <div class="twrap"><table class="atable"><thead><tr><th>Name</th><th>Role</th><th>Salary</th><th>CPF</th><th>Total Cost</th><th></th></tr></thead><tbody id="staffBody"></tbody></table></div>
+      </div>
+    </div>
+    <div id="tab-investors" class="tab">
+      <h1 class="apage-title">Investor Repayments</h1>
+      <p class="apage-sub">Track capital owed and repayment progress</p>
+      <div class="acard">
+        <h3>Add Investor</h3>
+        <div class="fgrid">
+          <div class="fg"><label>Investor Name</label><input type="text" id="iName" class="ainput" placeholder="Name"/></div>
+          <div class="fg"><label>Total Owed ($)</label><input type="number" id="iTotal" class="ainput" placeholder="0.00" step="0.01"/></div>
+          <div class="fg"><label>Already Repaid ($)</label><input type="number" id="iPaid" class="ainput" placeholder="0.00" step="0.01"/></div>
+          <div class="fg"><label>Notes</label><input type="text" id="iNotes" class="ainput" placeholder="e.g. Monthly $500"/></div>
+        </div>
+        <button class="abtn" onclick="addInv()">Save Investor</button>
+      </div>
+      <div class="acard">
+        <div class="card-row"><h3>Investor Tracker</h3><button class="abtn-sm danger" onclick="clearInv()">Clear All</button></div>
+        <div class="twrap"><table class="atable"><thead><tr><th>Name</th><th>Total Owed</th><th>Repaid</th><th>Remaining</th><th>Progress</th><th>Notes</th><th></th></tr></thead><tbody id="invBody"></tbody></table></div>
+      </div>
+    </div>
+    <div id="tab-pnl" class="tab">
+      <h1 class="apage-title">P&amp;L Summary</h1>
+      <p class="apage-sub">Monthly profit &amp; loss based on your entered data</p>
+      <div class="fg" style="max-width:220px;margin-bottom:24px;"><label>Select Month</label><input type="month" id="pMonth" class="ainput" onchange="renderPnL()"/></div>
+      <div class="kgrid" id="pnlKpis"></div>
+      <div class="acard" id="pnlTable"></div>
+      <div class="acard">
+        <h3>Break-Even Calculator</h3>
+        <p style="color:#666;margin-bottom:16px;font-size:0.92rem;">How many Hokkien Mee bowls per day to cover all costs?</p>
+        <div class="beresult" id="beResult">Add Hokkien Mee cost in the Food Costing tab first.</div>
+      </div>
+    </div>
+  </main>
+</div>
+<script src="js/admin.js"></script>
+</body>
+</html>
